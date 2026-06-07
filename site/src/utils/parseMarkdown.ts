@@ -30,6 +30,7 @@ const TYPO_CORRECTIONS: [RegExp, string][] = [
   [/\bisntalled\b/g, 'installed'],                                        // Public Facility
   [/messages from and old friend/g, 'messages from an old friend'],       // Temple Interior
   [/When works\?/g, 'When works for you?'],                               // Streetcar intro
+  [/already by overly-familiar/g, 'already be overly-familiar'],          // Motel
 ];
 
 function applyCorrections(text: string): string {
