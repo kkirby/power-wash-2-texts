@@ -1,3 +1,4 @@
+import { siteUrl } from '../utils/url';
 import type { Level, SingleMessage } from '../utils/types';
 
 // ─── Sender colour palette (deterministic, stable across pages) ───────────────
@@ -178,7 +179,7 @@ export function MessageThread({ level, prevLevel, nextLevel }: Props) {
       >
         {prevLevel ? (
           <a
-            href={`/level/${prevLevel.id}`}
+            href={siteUrl(`/level/${prevLevel.id}`)}
             style={{
               flex: 1,
               textDecoration: 'none',
@@ -198,7 +199,7 @@ export function MessageThread({ level, prevLevel, nextLevel }: Props) {
 
         {nextLevel ? (
           <a
-            href={`/level/${nextLevel.id}`}
+            href={siteUrl(`/level/${nextLevel.id}`)}
             style={{
               flex: 1,
               textDecoration: 'none',

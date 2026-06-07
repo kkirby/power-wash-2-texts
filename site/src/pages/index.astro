@@ -45,7 +45,7 @@ const SECTION_COLORS: Record<string, string> = {
       </p>
       {firstLevel && (
         <a
-          href={`/level/${firstLevel.id}`}
+          href={`${import.meta.env.BASE_URL}level/${firstLevel.id}`}
           style="display:inline-block; background:#1a3a6b; color:#fff; text-decoration:none; border-radius:10px; padding:11px 24px; font-size:14px; font-weight:700; border:1px solid #2a4a8b; transition:background 0.15s;"
         >
           Start reading →
@@ -65,7 +65,7 @@ const SECTION_COLORS: Record<string, string> = {
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px;">
           {section.levels.map(level => (
             <a
-              href={`/level/${level.id}`}
+              href={`${import.meta.env.BASE_URL}level/${level.id}`}
               style="text-decoration:none; background:#0f0f0f; border:1px solid #1c1c1e; border-radius:10px; padding:12px 14px; display:flex; flex-direction:column; gap:4px; transition:border-color 0.12s, background 0.12s;"
               onmouseover="this.style.borderColor='#2a3a5a'; this.style.background='#111';"
               onmouseout="this.style.borderColor='#1c1c1e'; this.style.background='#0f0f0f';"

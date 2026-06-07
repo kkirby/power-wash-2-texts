@@ -12,7 +12,7 @@ const isUserOrOrgPagesRepo =
   !!owner && !!repoName && `${owner}.github.io`.toLowerCase() === repoName.toLowerCase();
 const base = isGitHubActions && repoName && !isUserOrOrgPagesRepo ? `/${repoName}/` : '/';
 
-const site = process.env.SITE_URL ?? 'https://powerwash2.pages.dev';
+const site = process.env.SITE_URL ?? 'https://kkirby.github.io';
 
 export default defineConfig({
   integrations: [react(), sitemap()],

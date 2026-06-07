@@ -2,6 +2,7 @@ import '@mantine/core/styles.css';
 import { useState } from 'react';
 import { MantineProvider, createTheme, TextInput, Text } from '@mantine/core';
 import { AuthorLink, SourceDocLink } from './AuthorLinks';
+import { siteUrl } from '../utils/url';
 import type { SiteSection } from '../utils/types';
 
 const theme = createTheme({
@@ -47,7 +48,7 @@ function SidebarContent({ sections, currentLevelId }: Props) {
     >
       {/* Header */}
       <div style={{ padding: '14px 14px 10px', borderBottom: '1px solid #1c1c1e', background: '#0a0a0a', flexShrink: 0 }}>
-        <a href="/" style={{ textDecoration: 'none' }}>
+        <a href={siteUrl('/')} style={{ textDecoration: 'none' }}>
           <Text fw={800} size="md" c="white" style={{ lineHeight: 1.2 }}>
             💦 PW2 Messages
           </Text>
@@ -93,7 +94,7 @@ function SidebarContent({ sections, currentLevelId }: Props) {
               return (
                 <a
                   key={level.id}
-                  href={`/level/${level.id}`}
+                  href={siteUrl(`/level/${level.id}`)}
                   style={{
                     display: 'block',
                     textDecoration: 'none',
