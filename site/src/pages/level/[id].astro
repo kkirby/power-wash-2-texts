@@ -1,0 +1,57 @@
+---
+import { siteData } from '../../data/messages';
+import { AUTHOR } from '../../utils/author';
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import { MessageThread } from '../../components/MessageThread';
+
+export function getStaticPaths() {
+  const allLevels = siteData.flatMap(s => s.levels);
+  return allLevels.map((level, idx) => ({
+    params: { id: level.id },
+    props: {
+      level,
+      prevLevel: allLevels[idx - 1]
+        ? { id: allLevels[idx - 1].id, name: allLevels[idx - 1].name }
+        : undefined,
+      nextLevel: allLevels[idx + 1]
+        ? { id: allLevels[idx + 1].id, name: allLevels[idx + 1].name }
+        : undefined,
+    },
+  }));
+}
+
+const { level, prevLevel, nextLevel } = Astro.props;
+
+// Build a concise SEO description from the first message excerpt
+const description = level.excerpt
+  ? `${level.name} — ${level.excerpt.slice(0, 155)}`
+  : `Text messages from the ${level.name} level of PowerWash Simulator 2.`;
+
+// JSON-LD structured data
+const jsonLd = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: `${level.name} — PowerWash Simulator 2 Messages`,
+  description,
+  author: {
+    '@type': 'Person',
+    name: 'Altradil',
+    url: AUTHOR.url,
+  },
+  isPartOf: {
+    '@type': 'WebSite',
+    name: 'PowerWash Simulator 2 Text Messages',
+    url: Astro.site?.toString(),
+  },
+});
+---
+
+<SiteLayout
+  title={`${level.name} — PowerWash Simulator 2 Messages`}
+  description={description}
+  canonicalPath={`/level/${level.id}`}
+  currentLevelId={level.id}
+>
+  <script type="application/ld+json" set:html={jsonLd} />
+  <MessageThread level={level} prevLevel={prevLevel} nextLevel={nextLevel} />
+</SiteLayout>

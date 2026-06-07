@@ -1,0 +1,78 @@
+---
+import { siteData } from '../data/messages';
+import { SidebarIsland } from '../components/SidebarIsland';
+
+interface Props {
+  title?: string;
+  description?: string;
+  canonicalPath?: string;
+  /** Pass the level id so the sidebar highlights the active item */
+  currentLevelId?: string;
+}
+
+const {
+  title = 'PowerWash Simulator 2 — Text Messages',
+  description = 'All in-game text messages from PowerWash Simulator 2, compiled by Altradil.',
+  canonicalPath = '/',
+  currentLevelId,
+} = Astro.props;
+
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? '';
+const canonicalUrl = `${siteUrl}${Astro.base}${canonicalPath.replace(/^\//, '')}`;
+const ogImage = `${siteUrl}/og-default.png`;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href={`${Astro.base}favicon.ico`} />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Primary SEO -->
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content="PW2 Messages" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+
+    <!-- Mantine dark-mode colour scheme (no flash) -->
+    <script is:inline>document.documentElement.setAttribute('data-mantine-color-scheme', 'dark');</script>
+
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      html, body {
+        margin: 0; padding: 0;
+        background: #000; color: #fff;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        height: 100%;
+        overflow: hidden;
+      }
+      #root { height: 100vh; display: flex; }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <!-- Sidebar: interactive island (search + active state) -->
+      <SidebarIsland
+        sections={siteData}
+        currentLevelId={currentLevelId ?? ''}
+        client:load
+      />
+      <!-- Main content: server-rendered, no hydration needed -->
+      <main id="main-content" style="flex:1; overflow-y:auto; min-width:0;">
+        <slot />
+      </main>
+    </div>
+  </body>
+</html>
