@@ -51,23 +51,39 @@ const canonicalUrl = `${siteUrl}${Astro.base}${canonicalPath.replace(/^\//, '')}
     <script is:inline>document.documentElement.setAttribute('data-mantine-color-scheme', 'dark');</script>
 
     <script>
-      // Persist sidebar scroll position across client-side navigations.
-      // transition:persist keeps the node alive but Astro still resets inner
-      // scrollTop during the swap, so we snapshot/restore it manually.
       const SIDEBAR_SCROLL_KEY = 'sidebar-scroll';
 
+      // Set to true whenever a client-side transition is in progress so that
+      // astro:page-load can tell the difference from a hard / initial load.
+      let isTransition = false;
+
       document.addEventListener('astro:before-swap', () => {
+        isTransition = true;
+        // Snapshot scroll position before Astro resets it during the swap
         const list = document.getElementById('sidebar-level-list');
         if (list) sessionStorage.setItem(SIDEBAR_SCROLL_KEY, String(list.scrollTop));
       });
 
       document.addEventListener('astro:after-swap', () => {
+        // Restore snapshot after the swap
         const list = document.getElementById('sidebar-level-list');
         const saved = sessionStorage.getItem(SIDEBAR_SCROLL_KEY);
         if (list && saved != null) list.scrollTop = Number(saved);
 
-        // Reset the main content area to the top for the incoming page
+        // Reset main content to the top for the incoming page
         document.getElementById('main-content')?.scrollTo({ top: 0 });
+      });
+
+      document.addEventListener('astro:page-load', () => {
+        if (!isTransition) {
+          // Hard load or initial visit — scroll the active link into view
+          const pathname = window.location.pathname.replace(/\/$/, '');
+          const active =
+            document.querySelector(`#sidebar-level-list a[href="${pathname}"]`) ??
+            document.querySelector(`#sidebar-level-list a[href="${pathname}/"]`);
+          active?.scrollIntoView({ block: 'center', behavior: 'instant' });
+        }
+        isTransition = false;
       });
     </script>
 
