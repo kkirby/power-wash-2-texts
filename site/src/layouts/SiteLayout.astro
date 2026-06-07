@@ -1,4 +1,5 @@
 ---
+import { ClientRouter } from 'astro:transitions';
 import { siteData } from '../data/messages';
 import { SidebarIsland } from '../components/SidebarIsland';
 
@@ -6,7 +7,8 @@ interface Props {
   title?: string;
   description?: string;
   canonicalPath?: string;
-  /** Pass the level id so the sidebar highlights the active item */
+  /** Initial active level id — only used for SSR first-paint; after that the
+   *  sidebar island tracks the URL itself via astro:page-load events. */
   currentLevelId?: string;
 }
 
@@ -19,7 +21,6 @@ const {
 
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? '';
 const canonicalUrl = `${siteUrl}${Astro.base}${canonicalPath.replace(/^\//, '')}`;
-const ogImage = `${siteUrl}/og-default.png`;
 ---
 
 <html lang="en">
@@ -46,8 +47,18 @@ const ogImage = `${siteUrl}/og-default.png`;
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
 
-    <!-- Mantine dark-mode colour scheme (no flash) -->
+    <!-- No dark-mode flash -->
     <script is:inline>document.documentElement.setAttribute('data-mantine-color-scheme', 'dark');</script>
+
+    <!-- Scroll main content back to top on each SPA navigation -->
+    <script>
+      document.addEventListener('astro:after-swap', () => {
+        document.getElementById('main-content')?.scrollTo({ top: 0 });
+      });
+    </script>
+
+    <!-- Client-side routing: SPA-like navigation with JS, normal nav without -->
+    <ClientRouter />
 
     <style>
       *, *::before, *::after { box-sizing: border-box; }
@@ -63,14 +74,25 @@ const ogImage = `${siteUrl}/og-default.png`;
   </head>
   <body>
     <div id="root">
-      <!-- Sidebar: interactive island (search + active state) -->
-      <SidebarIsland
-        sections={siteData}
-        currentLevelId={currentLevelId ?? ''}
-        client:load
-      />
-      <!-- Main content: server-rendered, no hydration needed -->
-      <main id="main-content" style="flex:1; overflow-y:auto; min-width:0;">
+      <!--
+        transition:persist keeps the sidebar DOM node (and its scroll position)
+        alive across client-side navigations. The React island never remounts,
+        so it tracks the active level via astro:page-load events instead of props.
+      -->
+      <div transition:persist="sidebar" style="display:contents">
+        <SidebarIsland
+          sections={siteData}
+          currentLevelId={currentLevelId ?? ''}
+          client:load
+        />
+      </div>
+
+      <!-- Main content swaps on each navigation -->
+      <main
+        id="main-content"
+        transition:animate="fade"
+        style="flex:1; overflow-y:auto; min-width:0;"
+      >
         <slot />
       </main>
     </div>

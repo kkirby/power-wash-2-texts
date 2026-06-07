@@ -1,9 +1,15 @@
 import '@mantine/core/styles.css';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MantineProvider, createTheme, TextInput, Text } from '@mantine/core';
 import { AuthorLink, SourceDocLink } from './AuthorLinks';
 import { siteUrl } from '../utils/url';
 import type { SiteSection } from '../utils/types';
+
+/** Extract the level id from the current pathname, e.g. /base/level/shooting-gallery → shooting-gallery */
+function levelIdFromPath(): string {
+  const match = window.location.pathname.match(/\/level\/([^/]+)/);
+  return match?.[1] ?? '';
+}
 
 const theme = createTheme({
   primaryColor: 'blue',
@@ -24,6 +30,25 @@ interface Props {
 function SidebarContent({ sections, currentLevelId }: Props) {
   const [search, setSearch] = useState('');
   const [mobileOpen, setMobileOpen] = useState(false);
+  // Active level tracked from URL so it updates on SPA navigation without remounting
+  const [activeLevelId, setActiveLevelId] = useState(currentLevelId);
+  const activeRef = useRef<HTMLAnchorElement>(null);
+
+  useEffect(() => {
+    // Keep active level in sync with the URL after each Astro page swap
+    function onPageLoad() {
+      const id = levelIdFromPath();
+      setActiveLevelId(id);
+      setMobileOpen(false);
+    }
+    document.addEventListener('astro:page-load', onPageLoad);
+    return () => document.removeEventListener('astro:page-load', onPageLoad);
+  }, []);
+
+  // Scroll the active sidebar item into view whenever it changes
+  useEffect(() => {
+    activeRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [activeLevelId]);
 
   const filtered = sections
     .map(s => ({
@@ -90,10 +115,11 @@ function SidebarContent({ sections, currentLevelId }: Props) {
               </span>
             </div>
             {section.levels.map(level => {
-              const active = level.id === currentLevelId;
+              const active = level.id === activeLevelId;
               return (
                 <a
                   key={level.id}
+                  ref={active ? activeRef : undefined}
                   href={siteUrl(`/level/${level.id}`)}
                   style={{
                     display: 'block',
@@ -160,7 +186,7 @@ function SidebarContent({ sections, currentLevelId }: Props) {
           ☰
         </button>
         <Text fw={600} c="white" size="sm" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, paddingRight: 14 }}>
-          {sections.flatMap(s => s.levels).find(l => l.id === currentLevelId)?.name ?? 'PowerWash 2 Messages'}
+          {sections.flatMap(s => s.levels).find(l => l.id === activeLevelId)?.name ?? 'PowerWash 2 Messages'}
         </Text>
       </div>
 
