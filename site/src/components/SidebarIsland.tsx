@@ -5,12 +5,6 @@ import { AuthorLink, SourceDocLink } from './AuthorLinks';
 import { siteUrl } from '../utils/url';
 import type { SiteSection } from '../utils/types';
 
-/** Extract the level id from the current pathname, e.g. /base/level/shooting-gallery → shooting-gallery */
-function levelIdFromPath(): string {
-  const match = window.location.pathname.match(/\/level\/([^/]+)/);
-  return match?.[1] ?? '';
-}
-
 const theme = createTheme({
   primaryColor: 'blue',
   fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -27,15 +21,18 @@ interface Props {
   currentLevelId: string;
 }
 
+/** Extract the level id from the current pathname */
+function levelIdFromPath(): string {
+  const match = window.location.pathname.match(/\/level\/([^/]+)/);
+  return match?.[1] ?? '';
+}
+
 function SidebarContent({ sections, currentLevelId }: Props) {
   const [search, setSearch] = useState('');
   const [mobileOpen, setMobileOpen] = useState(false);
-  // Active level tracked from URL so it updates on SPA navigation without remounting
   const [activeLevelId, setActiveLevelId] = useState(currentLevelId);
+
   useEffect(() => {
-    // Keep active level in sync with the URL after each Astro page swap.
-    // The sidebar scroll position is already preserved by transition:persist —
-    // we just update the highlight, no scrolling needed.
     function onPageLoad() {
       setActiveLevelId(levelIdFromPath());
       setMobileOpen(false);
@@ -53,126 +50,143 @@ function SidebarContent({ sections, currentLevelId }: Props) {
     }))
     .filter(s => s.levels.length > 0);
 
-  const sidebarBody = (
-    <div
-      style={{
-        width: 260,
-        background: '#0f0f0f',
-        borderRight: '1px solid #1c1c1e',
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        overflow: 'hidden',
-      }}
-    >
-      {/* Header */}
-      <div style={{ padding: '14px 14px 10px', borderBottom: '1px solid #1c1c1e', background: '#0a0a0a', flexShrink: 0 }}>
-        <a href={siteUrl('/')} style={{ textDecoration: 'none' }}>
-          <Text fw={800} size="md" c="white" style={{ lineHeight: 1.2 }}>
-            💦 PW2 Messages
-          </Text>
-        </a>
-        <Text size="xs" c="dimmed" mt={2} mb={2}>
-          Compiled by <AuthorLink size="xs" c="blue.4" fw={600} />
-        </Text>
-        <Text size="xs" c="dimmed" mb={8}>
-          Source: <SourceDocLink size="xs" c="blue.4" />
-        </Text>
-        <TextInput
-          placeholder="Search levels…"
-          value={search}
-          onChange={e => setSearch(e.currentTarget.value)}
-          size="xs"
-          styles={{
-            input: {
-              background: '#1c1c1e',
-              border: '1px solid #333',
-              color: 'white',
-            },
-          }}
-        />
-      </div>
-
-      {/* Level list */}
-      <div id="sidebar-level-list" style={{ flex: 1, overflowY: 'auto', padding: '8px 6px' }}>
-        {filtered.map(section => (
-          <div key={section.name} style={{ marginBottom: 6 }}>
-            <div style={{ padding: '4px 8px 4px' }}>
-              <span style={{
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase' as const,
-                color: SECTION_COLORS[section.name] ?? '#888',
-              }}>
-                {section.name}
-              </span>
-            </div>
-            {section.levels.map(level => {
-              const active = level.id === activeLevelId;
-              return (
-                <a
-                  key={level.id}
-                  href={siteUrl(`/level/${level.id}`)}
-                  style={{
-                    display: 'block',
-                    textDecoration: 'none',
-                    background: active ? '#1a3a6b' : 'transparent',
-                    borderRadius: 8,
-                    padding: '7px 12px',
-                    color: active ? '#fff' : '#aaa',
-                    fontSize: 13,
-                    fontWeight: active ? 600 : 400,
-                    marginBottom: 1,
-                    transition: 'background 0.12s, color 0.12s',
-                  }}
-                  onMouseEnter={e => {
-                    if (!active) {
-                      (e.currentTarget as HTMLAnchorElement).style.background = '#1c1c1e';
-                      (e.currentTarget as HTMLAnchorElement).style.color = '#fff';
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    if (!active) {
-                      (e.currentTarget as HTMLAnchorElement).style.background = 'transparent';
-                      (e.currentTarget as HTMLAnchorElement).style.color = '#aaa';
-                    }
-                  }}
-                >
-                  {level.name}
-                </a>
-              );
-            })}
-            <div style={{ borderTop: '1px solid #1c1c1e', margin: '4px 4px 2px' }} />
-          </div>
-        ))}
-      </div>
-
-      {/* Footer */}
-      <div style={{ padding: '10px 14px', borderTop: '1px solid #1c1c1e', background: '#0a0a0a', textAlign: 'center', flexShrink: 0 }}>
-        <Text size="xs" c="dimmed">
-          Messages by <AuthorLink size="xs" c="blue.3" fw={700} />
-          {' '}·{' '}
-          <SourceDocLink size="xs" c="dimmed">Source doc</SourceDocLink>
-        </Text>
-      </div>
-    </div>
-  );
-
   return (
     <>
-      {/* Desktop sidebar */}
+      {/*
+        The sidebar is always rendered once in the DOM.
+        On desktop it sits in the normal flow.
+        On mobile it's fixed and slides in/out with a CSS transform —
+        this keeps the ID unique and preserves scroll position correctly.
+      */}
       <div
-        style={{ display: 'none' }}
-        className="desktop-sidebar"
+        id="sidebar-wrapper"
+        className={mobileOpen ? 'sidebar-open' : ''}
+        style={{
+          width: 260,
+          background: '#0f0f0f',
+          borderRight: '1px solid #1c1c1e',
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100vh',
+          overflow: 'hidden',
+          flexShrink: 0,
+        }}
       >
-        {sidebarBody}
+        {/* Header */}
+        <div style={{ padding: '14px 14px 10px', borderBottom: '1px solid #1c1c1e', background: '#0a0a0a', flexShrink: 0 }}>
+          <a href={siteUrl('/')} style={{ textDecoration: 'none' }}>
+            <Text fw={800} size="md" c="white" style={{ lineHeight: 1.2 }}>
+              💦 PW2 Messages
+            </Text>
+          </a>
+          <Text size="xs" c="dimmed" mt={2} mb={2}>
+            Compiled by <AuthorLink size="xs" c="blue.4" fw={600} />
+          </Text>
+          <Text size="xs" c="dimmed" mb={8}>
+            Source: <SourceDocLink size="xs" c="blue.4" />
+          </Text>
+          <TextInput
+            placeholder="Search levels…"
+            value={search}
+            onChange={e => setSearch(e.currentTarget.value)}
+            size="xs"
+            styles={{
+              input: {
+                background: '#1c1c1e',
+                border: '1px solid #333',
+                color: 'white',
+              },
+            }}
+          />
+        </div>
+
+        {/* Level list — the only instance of this ID in the DOM */}
+        <div id="sidebar-level-list" style={{ flex: 1, overflowY: 'auto', padding: '8px 6px' }}>
+          {filtered.map(section => (
+            <div key={section.name} style={{ marginBottom: 6 }}>
+              <div style={{ padding: '4px 8px 4px' }}>
+                <span style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase' as const,
+                  color: SECTION_COLORS[section.name] ?? '#888',
+                }}>
+                  {section.name}
+                </span>
+              </div>
+              {section.levels.map(level => {
+                const active = level.id === activeLevelId;
+                return (
+                  <a
+                    key={level.id}
+                    href={siteUrl(`/level/${level.id}`)}
+                    style={{
+                      display: 'block',
+                      textDecoration: 'none',
+                      background: active ? '#1a3a6b' : 'transparent',
+                      borderRadius: 8,
+                      padding: '7px 12px',
+                      color: active ? '#fff' : '#aaa',
+                      fontSize: 13,
+                      fontWeight: active ? 600 : 400,
+                      marginBottom: 1,
+                      transition: 'background 0.12s, color 0.12s',
+                    }}
+                    onMouseEnter={e => {
+                      if (!active) {
+                        (e.currentTarget as HTMLAnchorElement).style.background = '#1c1c1e';
+                        (e.currentTarget as HTMLAnchorElement).style.color = '#fff';
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      if (!active) {
+                        (e.currentTarget as HTMLAnchorElement).style.background = 'transparent';
+                        (e.currentTarget as HTMLAnchorElement).style.color = '#aaa';
+                      }
+                    }}
+                  >
+                    {level.name}
+                  </a>
+                );
+              })}
+              <div style={{ borderTop: '1px solid #1c1c1e', margin: '4px 4px 2px' }} />
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: '10px 14px', borderTop: '1px solid #1c1c1e', background: '#0a0a0a', textAlign: 'center', flexShrink: 0 }}>
+          <Text size="xs" c="dimmed">
+            Messages by <AuthorLink size="xs" c="blue.3" fw={700} />
+            {' '}·{' '}
+            <SourceDocLink size="xs" c="dimmed">Source doc</SourceDocLink>
+          </Text>
+        </div>
       </div>
 
+      {/* Mobile backdrop — clicking it closes the drawer */}
+      {mobileOpen && (
+        <div
+          onClick={() => setMobileOpen(false)}
+          style={{
+            display: 'none', // shown via CSS on mobile only
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.65)',
+            zIndex: 199,
+          }}
+          className="sidebar-backdrop"
+        />
+      )}
+
       {/* Mobile top bar */}
-      <div className="mobile-topbar" style={{ display: 'none' }}>
+      <div
+        className="mobile-topbar"
+        style={{ display: 'none' }}
+      >
         <button
-          onClick={() => setMobileOpen(true)}
+          onClick={() => setMobileOpen(o => !o)}
           style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '8px 14px', fontSize: 20, lineHeight: 1, flexShrink: 0 }}
           aria-label="Open navigation"
         >
@@ -183,26 +197,33 @@ function SidebarContent({ sections, currentLevelId }: Props) {
         </Text>
       </div>
 
-      {/* Mobile overlay */}
-      {mobileOpen && (
-        <>
-          <div
-            onClick={() => setMobileOpen(false)}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 200 }}
-          />
-          <div style={{ position: 'fixed', left: 0, top: 0, bottom: 0, zIndex: 201, height: '100vh' }}>
-            {sidebarBody}
-          </div>
-        </>
-      )}
-
       <style>{`
+        /* ── Desktop ── */
         @media (min-width: 701px) {
-          .desktop-sidebar { display: block !important; height: 100vh; }
+          #sidebar-wrapper {
+            position: static;
+            transform: none !important;
+          }
           .mobile-topbar { display: none !important; }
+          .sidebar-backdrop { display: none !important; }
         }
+
+        /* ── Mobile ── */
         @media (max-width: 700px) {
-          .desktop-sidebar { display: none !important; }
+          #sidebar-wrapper {
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            z-index: 200;
+            transform: translateX(-100%);
+            transition: transform 0.22s ease;
+            height: 100dvh;
+          }
+          #sidebar-wrapper.sidebar-open {
+            transform: translateX(0);
+          }
+          .sidebar-backdrop {
+            display: block !important;
+          }
           .mobile-topbar {
             display: flex !important;
             align-items: center;
