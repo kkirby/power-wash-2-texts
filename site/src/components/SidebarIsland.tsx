@@ -94,7 +94,7 @@ function SidebarContent({ sections, currentLevelId }: Props) {
       </div>
 
       {/* Level list */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 6px' }}>
+      <div id="sidebar-level-list" style={{ flex: 1, overflowY: 'auto', padding: '8px 6px' }}>
         {filtered.map(section => (
           <div key={section.name} style={{ marginBottom: 6 }}>
             <div style={{ padding: '4px 8px 4px' }}>

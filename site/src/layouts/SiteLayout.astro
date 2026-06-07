@@ -50,9 +50,23 @@ const canonicalUrl = `${siteUrl}${Astro.base}${canonicalPath.replace(/^\//, '')}
     <!-- No dark-mode flash -->
     <script is:inline>document.documentElement.setAttribute('data-mantine-color-scheme', 'dark');</script>
 
-    <!-- Scroll main content back to top on each SPA navigation -->
     <script>
+      // Persist sidebar scroll position across client-side navigations.
+      // transition:persist keeps the node alive but Astro still resets inner
+      // scrollTop during the swap, so we snapshot/restore it manually.
+      const SIDEBAR_SCROLL_KEY = 'sidebar-scroll';
+
+      document.addEventListener('astro:before-swap', () => {
+        const list = document.getElementById('sidebar-level-list');
+        if (list) sessionStorage.setItem(SIDEBAR_SCROLL_KEY, String(list.scrollTop));
+      });
+
       document.addEventListener('astro:after-swap', () => {
+        const list = document.getElementById('sidebar-level-list');
+        const saved = sessionStorage.getItem(SIDEBAR_SCROLL_KEY);
+        if (list && saved != null) list.scrollTop = Number(saved);
+
+        // Reset the main content area to the top for the incoming page
         document.getElementById('main-content')?.scrollTo({ top: 0 });
       });
     </script>
