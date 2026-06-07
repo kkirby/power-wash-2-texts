@@ -4,7 +4,6 @@ import { App } from './App';
 import type { SiteSection } from '../utils/types';
 
 const theme = createTheme({
-  colorScheme: 'dark',
   primaryColor: 'blue',
   fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
 });
