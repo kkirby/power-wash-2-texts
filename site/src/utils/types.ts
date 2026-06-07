@@ -9,8 +9,12 @@ export interface MessageBlock {
 }
 
 export interface ProgressPoint {
-  progress: string; // "Introduction", "Level Overview", "20%", "Completion", etc.
-  label?: string; // "Stage 1 complete"
+  /** Display label: "Introduction", "20%", "Completion", etc. */
+  progress: string;
+  /** Extra label after a dash: "Stage 1 complete" */
+  label?: string;
+  /** Stable anchor id for jump-to-section links */
+  anchor: string;
   blocks: MessageBlock[];
 }
 
@@ -18,6 +22,8 @@ export interface Level {
   id: string;
   name: string;
   sectionName: string;
+  /** First message text for SEO description */
+  excerpt: string;
   points: ProgressPoint[];
 }
 
