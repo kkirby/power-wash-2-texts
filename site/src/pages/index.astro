@@ -1,0 +1,33 @@
+---
+import { siteData } from '../data/messages';
+import { AppWrapper } from '../components/AppWrapper';
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>PowerWash Simulator 2 — Text Messages</title>
+    <meta name="description" content="All in-game text messages from PowerWash Simulator 2, compiled by Altradil." />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: #000;
+        color: white;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        overflow: hidden;
+        height: 100%;
+      }
+      #root { height: 100vh; }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <AppWrapper sections={siteData} client:load />
+    </div>
+  </body>
+</html>
