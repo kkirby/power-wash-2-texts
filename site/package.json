@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@astrojs/react": "^5.0.7",
+    "@astrojs/sitemap": "^3.7.3",
     "@mantine/core": "^9.3.0",
     "@mantine/hooks": "^9.3.0",
     "@mantine/notifications": "^9.3.0",
@@ -24,5 +25,6 @@
     "postcss-simple-vars": "^7.0.1",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
-  }
+  },
+  "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be"
 }
