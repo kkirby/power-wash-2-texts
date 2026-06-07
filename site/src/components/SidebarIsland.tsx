@@ -1,5 +1,5 @@
 import '@mantine/core/styles.css';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { MantineProvider, createTheme, TextInput, Text } from '@mantine/core';
 import { AuthorLink, SourceDocLink } from './AuthorLinks';
 import { siteUrl } from '../utils/url';
@@ -32,23 +32,17 @@ function SidebarContent({ sections, currentLevelId }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
   // Active level tracked from URL so it updates on SPA navigation without remounting
   const [activeLevelId, setActiveLevelId] = useState(currentLevelId);
-  const activeRef = useRef<HTMLAnchorElement>(null);
-
   useEffect(() => {
-    // Keep active level in sync with the URL after each Astro page swap
+    // Keep active level in sync with the URL after each Astro page swap.
+    // The sidebar scroll position is already preserved by transition:persist —
+    // we just update the highlight, no scrolling needed.
     function onPageLoad() {
-      const id = levelIdFromPath();
-      setActiveLevelId(id);
+      setActiveLevelId(levelIdFromPath());
       setMobileOpen(false);
     }
     document.addEventListener('astro:page-load', onPageLoad);
     return () => document.removeEventListener('astro:page-load', onPageLoad);
   }, []);
-
-  // Scroll the active sidebar item into view whenever it changes
-  useEffect(() => {
-    activeRef.current?.scrollIntoView({ block: 'nearest' });
-  }, [activeLevelId]);
 
   const filtered = sections
     .map(s => ({
@@ -119,7 +113,6 @@ function SidebarContent({ sections, currentLevelId }: Props) {
               return (
                 <a
                   key={level.id}
-                  ref={active ? activeRef : undefined}
                   href={siteUrl(`/level/${level.id}`)}
                   style={{
                     display: 'block',
