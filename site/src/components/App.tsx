@@ -3,11 +3,11 @@ import {
   Text,
   Box,
   Stack,
-  Anchor,
   Badge,
   TextInput,
   Divider,
 } from '@mantine/core';
+import { AuthorLink } from './AuthorLinks';
 import { MessageThread } from './MessageThread';
 import type { Level, SiteSection } from '../utils/types';
 
@@ -69,17 +69,7 @@ function Sidebar({
           💦 PW2 Messages
         </Text>
         <Text size="xs" c="dimmed" mb={8}>
-          Compiled by{' '}
-          <Anchor
-            href="https://www.reddit.com/user/Altradil"
-            target="_blank"
-            rel="noopener noreferrer"
-            size="xs"
-            c="blue.4"
-            fw={600}
-          >
-            Altradil
-          </Anchor>
+          Compiled by <AuthorLink size="xs" c="blue.4" fw={600} />
         </Text>
         <TextInput
           placeholder="Search levels…"
@@ -173,17 +163,7 @@ function Sidebar({
         }}
       >
         <Text size="xs" c="dimmed">
-          Messages by{' '}
-          <Anchor
-            href="https://www.reddit.com/user/Altradil"
-            target="_blank"
-            rel="noopener noreferrer"
-            size="xs"
-            c="blue.3"
-            fw={700}
-          >
-            Altradil
-          </Anchor>
+          Messages by <AuthorLink size="xs" c="blue.3" fw={700} />
         </Text>
       </div>
     </div>
